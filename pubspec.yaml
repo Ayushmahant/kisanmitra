@@ -37,7 +37,6 @@ dependencies:
   lottie: ^3.3.1
   google_fonts: ^6.2.1
   animate_do: ^3.3.8
-  material_symbols_icons: ^4.2805.1
 
 dev_dependencies:
   flutter_test:
@@ -65,13 +64,6 @@ flutter:
    assets:
      - assets/splashscreen/screen.png
      - assets/animations/Animation - 1738948259531.json
-     - assets/pages/exmaple.jpg
-     - assets/pages/example2.jpg
-     - assets/pages/bid.png
-     - assets/pages/buy.png
-     - assets/pages/newspaper-folded.png
-     - assets/pages/store.png
-     - assets/logo.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

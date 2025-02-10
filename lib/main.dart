@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kisanmitra/loginscreen.dart';
-import 'bottomnavbar.dart';
 import 'splashscreen.dart';
 
 void main() {
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.green),
-      home: Splash(),
+      home: HomePage(),
 
     );
   }
