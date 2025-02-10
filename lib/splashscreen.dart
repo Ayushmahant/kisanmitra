@@ -4,6 +4,8 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'register.dart';
 import 'loginscreen.dart';
+import 'insidepages/homies.dart';
+import 'bottomnavbar.dart';
 
 class Splash extends StatefulWidget {  // Change to StatefulWidget
   const Splash({super.key});
@@ -22,7 +24,7 @@ class _SplashState extends State<Splash> {
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const SignUpScreen()),  // Navigate to HomeScreen
+        MaterialPageRoute(builder: (context) => MajorPage()),  // Navigate to HomeScreen
       );
     });
   }
@@ -37,9 +39,9 @@ class _SplashState extends State<Splash> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
-              "assets/splashscreen/screen.png",
-              width: 200,
-              height: 200,
+              "assets/logo.png",
+              width: 400,
+              height: 400,
             ),
 
             const SizedBox(height: 100),
