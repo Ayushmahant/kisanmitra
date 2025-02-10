@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:animate_do/animate_do.dart';
 import 'register.dart';
+import 'splashscreen.dart'; // Replace with your actual home screen
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,8 +11,122 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final TextEditingController _emailPhoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      String input = _emailPhoneController.text.trim();
+      String password = _passwordController.text.trim();
+
+      UserCredential userCredential;
+
+      if (input.contains('@')) {
+        // Login with Email & Password
+        userCredential = await _auth.signInWithEmailAndPassword(
+          email: input,
+          password: password,
+        );
+
+        // After successful login, navigate to the home page
+        navigateToHomePage();
+      } else {
+        // Handle phone number authentication
+        String phoneNumber = input.trim();
+
+        // Append India country code (+91) if not present
+        if (!phoneNumber.startsWith('+91')) {
+          phoneNumber = '+91' + phoneNumber;
+        }
+
+        // Start the phone number authentication process with reCAPTCHA verification handled internally
+        await _auth.verifyPhoneNumber(
+          phoneNumber: phoneNumber,
+          verificationCompleted: (PhoneAuthCredential credential) async {
+            // Auto-retrieval of verification code completed (e.g., SMS code was auto-filled)
+            await _auth.signInWithCredential(credential);
+            navigateToHomePage();
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            showError(e.message ?? "Phone number verification failed");
+          },
+          codeSent: (String verificationId, int? resendToken) {
+            // Handle when the code is sent to the user's phone
+            _showSmsCodeDialog(verificationId);
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {
+            // Handle timeout if needed
+          },
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      showError(e.message ?? "Login failed");
+    } catch (e) {
+      showError("Error: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Function to show the SMS code dialog or input screen
+  Future<void> _showSmsCodeDialog(String verificationId) async {
+    String smsCode = '';
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Enter the SMS Code"),
+          content: TextField(
+            onChanged: (value) {
+              smsCode = value;
+            },
+            decoration: InputDecoration(hintText: 'Enter SMS Code'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () async {
+                // Create the PhoneAuthCredential with the code entered by the user
+                PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                  verificationId: verificationId,
+                  smsCode: smsCode,
+                );
+
+                // Sign the user in with the phone credential
+                await _auth.signInWithCredential(credential);
+                navigateToHomePage();
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void navigateToHomePage() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Splash()), // Replace with actual home screen
+    );
+  }
+
+  void showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +180,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         child: TextField(
-                          controller: _usernameController,
+                          controller: _emailPhoneController,
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: "Name",
+                            hintText: "Email or Phone Number",
                             hintStyle: TextStyle(color: Colors.grey.shade700),
                           ),
                         ),
@@ -98,18 +215,19 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-             // SizedBox(height: 30),
               FadeInUp(
                 duration: Duration(milliseconds: 1000),
                 child: MaterialButton(
-                  onPressed: () {}, // No logic added yet
+                  onPressed: loginUser,
                   color: Color.fromRGBO(49, 39, 79, 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                   height: 50,
                   minWidth: double.infinity,
-                  child: Text(
+                  child: isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
                     "Login",
                     style: TextStyle(color: Colors.white),
                   ),
