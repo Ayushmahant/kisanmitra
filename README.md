@@ -1,16 +1,11 @@
-# kisanmitra
+KrishiMitra 🌿
+📌 Important Links
+🔹 [Google Drive (Project Resources)](https://drive.google.com/drive/folders/1m-FGjx4rT63Q81Z-ci8MidvYZqfPuhN4?usp=drive_link) 
 
-A new Flutter project.
+🔹 [Software Requirements Specification (SRS)](https://docs.google.com/document/d/1FELih6vbPNotcMIDKpPUlQFJg4RLxrhw/edit?usp=sharing&ouid=111484105416090072938&rtpof=true&sd=true)  
 
-## Getting Started
+🔹 [Project Presentation (PPT)](https://www.canva.com/design/DAGPJSam_Sg/_JN8r917nbfAy9Bk7DiV5Q/edit?utm_content=DAGPJSam_Sg&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)  
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+   

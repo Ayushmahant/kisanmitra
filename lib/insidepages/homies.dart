@@ -70,7 +70,7 @@ class IPopScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Your destination for all things I-Pop. Welcome home.',
+                  'Bringing you the freshest produce right from the source.',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.black87,

@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:animate_do/animate_do.dart';
 import 'register.dart';
+import 'insidepages/homies.dart';
+import 'bottomnavbar.dart';
 import 'splashscreen.dart'; // Replace with your actual home screen
 
 class HomePage extends StatefulWidget {
@@ -118,7 +120,7 @@ class _HomePageState extends State<HomePage> {
   void navigateToHomePage() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Splash()), // Replace with actual home screen
+      MaterialPageRoute(builder: (context) => MajorPage()), // Replace with actual home screen
     );
   }
 
