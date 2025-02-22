@@ -16,7 +16,7 @@ class _MajorPageState extends State<MajorPage> {
   // List of pages to display based on the selected index
   final List<Widget> _pages = [
     IPopScreen(),
-    const auctionpage()// Home Page
+    AuctionScreen(),// Home Page
     // Placeholder
   ];
 

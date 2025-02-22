@@ -6,6 +6,7 @@ import 'register.dart';
 import 'loginscreen.dart';
 import 'insidepages/homies.dart';
 import 'bottomnavbar.dart';
+import 'insidepages/auction.dart';
 
 class Splash extends StatefulWidget {  // Change to StatefulWidget
   const Splash({super.key});
@@ -24,7 +25,7 @@ class _SplashState extends State<Splash> {
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),  // Navigate to HomeScreen
+        MaterialPageRoute(builder: (context) => IPopScreen()),  // Navigate to HomeScreen
       );
     });
   }
