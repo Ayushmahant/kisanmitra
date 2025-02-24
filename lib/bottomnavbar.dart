@@ -16,7 +16,7 @@ class _MajorPageState extends State<MajorPage> {
   // List of pages to display based on the selected index
   final List<Widget> _pages = [
     IPopScreen(),
-    AuctionScreen(),// Home Page
+    //AuctionScreen(),// Home Page
     // Placeholder
   ];
 
@@ -25,6 +25,8 @@ class _MajorPageState extends State<MajorPage> {
       _selectedIndex = index;
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +48,13 @@ class _MajorPageState extends State<MajorPage> {
                 icon: Icon(Symbols.home, size: 28, color: Colors.green, fill: 1.0),
                 label: 'Home',
               ),
+              /*
               BottomNavigationBarItem(
                 icon: Icon(Symbols.account_box_rounded, size: 28, color: Colors.green, fill: 1.0),
                 label: 'Auction',
               ),
+
+               */
               BottomNavigationBarItem(
                 icon: Icon(Symbols.person, size: 28, color: Colors.green, fill: 1.0),
                 label: 'Profile',

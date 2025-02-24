@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/widgets/card.dart';
+import 'auction.dart';
 
 class IPopScreen extends StatelessWidget {
   //final Function(int) onItemSelected; // Function to update bottom nav index
@@ -9,6 +10,7 @@ class IPopScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -89,30 +91,34 @@ class IPopScreen extends StatelessWidget {
                         title: "Market",
                         bgColor: Colors.green,
                         imagePath: "assets/pages/store.png",
-                        //onTap: () {}, // No navigation
+                        onTap: () {}, // No navigation
                       ),
                       CustomCard(
                         title: "Sell",
                         bgColor: const Color.fromARGB(255, 128, 236, 47),
                         imagePath: "assets/pages/buy.png",
-                        //onTap: () {}, // No navigation
+                        onTap: () {}, // No navigation
                       ),
                       CustomCard(
-                        title: "Bid",
+                        title: "Auction",
                         bgColor: Colors.greenAccent,
                         imagePath: "assets/pages/bid.png",
-                        /*
                         onTap: () {
-                          onItemSelected(1); // Navigates to index 1
+                          print('Auction card tapped');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AuctionScreen(),
+                            ),
+                          );
                         },
 
-                         */
                       ),
                       CustomCard(
                         title: "Trends",
                         bgColor: Colors.lightGreenAccent,
                         imagePath: "assets/pages/newspaper-folded.png",
-                        //onTap: () {}, // No navigation
+                        onTap: () {}, // No navigation
                       ),
                     ],
                   ),

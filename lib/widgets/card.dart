@@ -4,27 +4,28 @@ class CustomCard extends StatelessWidget {
   final String title;
   final String imagePath;
   final Color bgColor;
-  //final VoidCallback onTap; // Added callback for navigation
+  final dynamic onTap; // Using dynamic to allow different callback types
 
   const CustomCard({
     super.key,
     required this.title,
     required this.imagePath,
     required this.bgColor,
-   // required this.onTap, // Required navigation function
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector( // Detects taps
-     // onTap: onTap,
+    return GestureDetector(
+      onTap: onTap, // Activate onTap for navigation
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1), // Subtle shadow
+              color: Colors.black.withValues(alpha: 0.1),
+              //color: bgColor.withValues(alpha: 0.5), // Fixed usage
               blurRadius: 5,
               spreadRadius: 2,
             ),
@@ -35,7 +36,7 @@ class CustomCard extends StatelessWidget {
             // Background Color
             Positioned.fill(
               child: Container(
-                color: bgColor.withValues(alpha: 0.1), // Light tint of color
+                  color: bgColor.withValues(alpha: 0.1), // Fixed usage
               ),
             ),
             // Card Content
