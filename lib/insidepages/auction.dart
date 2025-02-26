@@ -22,7 +22,7 @@ class _AuctionScreenState extends State<AuctionScreen> {
   File? _selectedImage;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  final String rpcUrl = "http://192.168.1.105:8545";
+  final String rpcUrl = "http://192.168.1.109:8545/";
   final String privateKey = "0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e";
   late Web3Client client;
   late Credentials credentials;
