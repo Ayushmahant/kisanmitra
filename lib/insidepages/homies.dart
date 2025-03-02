@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/widgets/card.dart';
 import 'auction.dart';
+import 'package:kisanmitra/mandi.dart';
 
 class IPopScreen extends StatelessWidget {
   //final Function(int) onItemSelected; // Function to update bottom nav index
@@ -91,7 +92,13 @@ class IPopScreen extends StatelessWidget {
                         title: "Market",
                         bgColor: Colors.green,
                         imagePath: "assets/pages/store.png",
-                        onTap: () {}, // No navigation
+                        onTap: () {print('Market tapped');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MandiPriceApp(),
+                          ),
+                        );}, // No navigation
                       ),
                       CustomCard(
                         title: "Sell",

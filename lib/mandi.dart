@@ -1,12 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:shared_preferences/shared_preferences.dart';
-
-void main() {
-  runApp(const MandiPriceApp());
-}
 
 class MandiPriceApp extends StatelessWidget {
   const MandiPriceApp({super.key});
@@ -17,7 +12,7 @@ class MandiPriceApp extends StatelessWidget {
       title: 'Mandi Prices',
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system, // Dynamic light/dark theme
+      themeMode: ThemeMode.system,
       home: const MandiPricePage(),
     );
   }
@@ -40,12 +35,12 @@ class _MandiPricePageState extends State<MandiPricePage> {
   @override
   void initState() {
     super.initState();
-    _loadCachedData(); // Load cached data on start
-    _fetchMandiPrices(); // Fetch fresh data
-    _searchController.addListener(_filterData); // Search listener
+    _loadCachedData();
+    _fetchMandiPrices();
+    _searchController.addListener(_filterData);
   }
 
-  // Fetch data from API
+  // Fetch Data from API
   Future<void> _fetchMandiPrices() async {
     setState(() {
       _isLoading = true;
@@ -53,23 +48,27 @@ class _MandiPricePageState extends State<MandiPricePage> {
     });
 
     const String apiUrl =
-        'https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi';
-    const String apiKey = '579b464db66ec23bdd0000019951b5966e614fa57cd9c8cecc87cc9c';
+        'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd0000014f344e23bf3e490a4bdc8511437c97da&format=json&limit=10';
 
     try {
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {'Authorization': 'Bearer $apiKey'},
-      );
+      final response = await http.get(Uri.parse(apiUrl));
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}'); // DEBUG API RESPONSE
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        if (data['records'] == null || data['records'].isEmpty) {
+          throw Exception('No data found in API response');
+        }
+
         setState(() {
-          _mandiData = data; // Adjust based on actual API response structure
-          _filteredData = _mandiData;
+          _mandiData = List.from(data['records']);
+          _filteredData = List.from(_mandiData);
           _isLoading = false;
         });
-        _cacheData(data); // Cache the fetched data
+
+        _cacheData(_mandiData);
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
@@ -78,43 +77,42 @@ class _MandiPricePageState extends State<MandiPricePage> {
         _errorMessage = 'Error: $e';
         _isLoading = false;
       });
-      _loadCachedData(); // Fallback to cached data
+      _loadCachedData();
     }
   }
 
-  // Cache data using SharedPreferences
-  Future<void> _cacheData(dynamic data) async {
+  // Cache Data
+  Future<void> _cacheData(List<dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('mandi_data', jsonEncode(data));
   }
 
-  // Load cached data
+  // Load Cached Data
   Future<void> _loadCachedData() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString('mandi_data');
     if (cachedData != null) {
       setState(() {
         _mandiData = jsonDecode(cachedData);
-        _filteredData = _mandiData;
+        _filteredData = List.from(_mandiData);
       });
     }
   }
 
-  // Filter data based on search input
+  // Search Filtering
   void _filterData() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredData = _mandiData.where((item) {
-        return item['State'].toString().toLowerCase().contains(query) ||
-            item['Market'].toString().toLowerCase().contains(query) ||
-            item['Commodity'].toString().toLowerCase().contains(query);
+        return (item['state']?.toString().toLowerCase() ?? '').contains(query) ||
+            (item['market']?.toString().toLowerCase() ?? '').contains(query) ||
+            (item['commodity']?.toString().toLowerCase() ?? '').contains(query);
       }).toList();
     });
   }
 
-  // Placeholder for export functionality (CSV/PDF)
+  // Export Data Placeholder
   void _exportData() {
-    // Add logic for CSV/PDF export using packages like `csv` or `pdf`
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Exporting data as CSV/PDF...')),
     );
@@ -125,14 +123,20 @@ class _MandiPricePageState extends State<MandiPricePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mandi Prices'),
+        leading: IconButton( // 🔙 ADD BACK BUTTON
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchMandiPrices, // Manual refresh
+            onPressed: _fetchMandiPrices,
           ),
           IconButton(
             icon: const Icon(Icons.download),
-            onPressed: _exportData, // Export button
+            onPressed: _exportData,
           ),
         ],
       ),
@@ -153,30 +157,35 @@ class _MandiPricePageState extends State<MandiPricePage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _errorMessage.isNotEmpty
-                    ? Center(child: Text(_errorMessage))
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('State')),
-                            DataColumn(label: Text('Market')),
-                            DataColumn(label: Text('Commodity')),
-                            DataColumn(label: Text('Min Price')),
-                            DataColumn(label: Text('Max Price')),
-                            DataColumn(label: Text('Modal Price')),
-                          ],
-                          rows: _filteredData.map((item) {
-                            return DataRow(cells: [
-                              DataCell(Text(item['State'] ?? '')),
-                              DataCell(Text(item['Market'] ?? '')),
-                              DataCell(Text(item['Commodity'] ?? '')),
-                              DataCell(Text(item['Min Price']?.toString() ?? '')),
-                              DataCell(Text(item['Max Price']?.toString() ?? '')),
-                              DataCell(Text(item['Modal Price']?.toString() ?? '')),
-                            ]);
-                          }).toList(),
-                        ),
-                      ),
+                ? Center(child: Text(_errorMessage))
+                : _filteredData.isEmpty
+                ? const Center(child: Text('No data available'))
+                : SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text('State')),
+                    DataColumn(label: Text('Market')),
+                    DataColumn(label: Text('Commodity')),
+                    DataColumn(label: Text('Min Price')),
+                    DataColumn(label: Text('Max Price')),
+                    DataColumn(label: Text('Modal Price')),
+                  ],
+                  rows: _filteredData.map((item) {
+                    return DataRow(cells: [
+                      DataCell(Text(item['state'] ?? 'N/A')),
+                      DataCell(Text(item['market'] ?? 'N/A')),
+                      DataCell(Text(item['commodity'] ?? 'N/A')),
+                      DataCell(Text(item['min_price']?.toString() ?? 'N/A')),
+                      DataCell(Text(item['max_price']?.toString() ?? 'N/A')),
+                      DataCell(Text(item['modal_price']?.toString() ?? 'N/A')),
+                    ]);
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
         ],
       ),
