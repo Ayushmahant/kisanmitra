@@ -1,254 +1,213 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/cupertino.dart';
 
-class AuctionPage extends StatefulWidget {
-  @override
-  _AuctionPageState createState() => _AuctionPageState();
-}
-
-class _AuctionPageState extends State<AuctionPage> {
-  String selectedLocation = 'Nagpur'; // Default location
-  String searchTerm = '';
+class CustomerAuctionScreen extends StatefulWidget {
+  const CustomerAuctionScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          selectedLocation,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.green,
-        elevation: 5,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  searchTerm = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search crops or farmers...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-              ),
-            ),
-            SizedBox(height: 16),
-            // Location Dropdown
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.grey[200],
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: DropdownButton<String>(
-                value: selectedLocation,
-                items: <String>['Nagpur', 'Indore', 'Ambala', 'Delhi']
-                    .map<DropdownMenuItem<String>>((String location) {
-                  return DropdownMenuItem<String>(
-                    value: location,
-                    child: Text(location, style: TextStyle(fontSize: 16)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedLocation = newValue!;
-                  });
-                },
-                isExpanded: true,
-                underline: SizedBox(),
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Latest crops in $selectedLocation',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('auction_items')
-                    .where('location', isEqualTo: selectedLocation)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(child: Text('No auction items available'));
-                  }
-
-                  var filteredCrops = snapshot.data!.docs
-                      .map((doc) => Crop.fromFirestore(doc))
-                      .where((crop) =>
-                  crop.cropName.toLowerCase().contains(searchTerm.toLowerCase()) ||
-                      crop.farmerId.toLowerCase().contains(searchTerm.toLowerCase()))
-                      .toList();
-
-                  return ListView.builder(
-                    itemCount: filteredCrops.length,
-                    itemBuilder: (context, index) {
-                      return CropCard(crop: filteredCrops[index]);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<CustomerAuctionScreen> createState() => _CustomerAuctionScreenState();
 }
 
-class Crop {
-  final String farmerName;
-  final String farmerId;
-  final String address;
-  final String weight;
-  final String land;
-  final String available;
-  final String rate;
-  final String cropName;
-  final String date;
-  final String location;
-  final String imageUrl;
+class _CustomerAuctionScreenState extends State<CustomerAuctionScreen> {
+  final TextEditingController _bidController = TextEditingController();
+  String? selectedItemId;
+  Map<String, dynamic>? selectedItem;
+  Set<String> placedBids = {};
 
-  Crop({
-    required this.farmerName,
-    required this.farmerId,
-    required this.address,
-    required this.weight,
-    required this.land,
-    required this.available,
-    required this.rate,
-    required this.cropName,
-    required this.date,
-    required this.location,
-    required this.imageUrl,
-  });
-
-  factory Crop.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return Crop(
-      farmerName: data['farmerId'] ?? 'Unknown Farmer', // Adjust based on your data
-      farmerId: data['farmerId'] ?? 'N/A',
-      address: data['location'] ?? 'Unknown Address',
-      weight: "${data['quantity'] ?? 0} Tons",
-      land: "N/A", // Add this field to Firestore if needed
-      available: data['available'] ?? 'N/A',
-      rate: data['rate'] ?? '₹ 0',
-      cropName: data['name'] ?? 'Unknown Crop',
-      date: data['createdAt'] != null
-          ? (data['createdAt'] as Timestamp).toDate().toString().substring(0, 10)
-          : 'N/A',
-      location: data['location'] ?? 'N/A',
-      imageUrl: data['imageUrl'] ?? 'assets/pages/placeholder.png',
-    );
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlacedBids();
   }
-}
 
-// CropCard remains the same as in your original code
-class CropCard extends StatelessWidget {
-  final Crop crop;
+  Future<void> _fetchPlacedBids() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  CropCard({required this.crop});
+    FirebaseFirestore.instance
+        .collection('bids')
+        .doc(user.uid)
+        .collection('bids')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        placedBids = snapshot.docs.map((doc) => doc.id).toSet();
+      });
+    });
+  }
 
-  void _showBidDialog(BuildContext context) {
-    TextEditingController priceController = TextEditingController();
+  void _showBidBottomSheet(Map<String, dynamic> itemData, String itemId) {
+    if (placedBids.contains(itemId)) return;
 
-    showDialog(
+    setState(() {
+      selectedItem = itemData;
+      selectedItemId = itemId;
+    });
+
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: Text("Enter Your Bid Price", style: TextStyle(fontWeight: FontWeight.bold)),
-          content: TextField(
-            controller: priceController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: "Enter price per kg",
-              border: OutlineInputBorder(),
-            ),
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancel", style: TextStyle(color: Colors.red)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                String enteredPrice = priceController.text;
-                if (enteredPrice.isNotEmpty) {
-                  print("Bid Submitted: ₹$enteredPrice per kg");
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Bid successfully submitted!", style: TextStyle(fontSize: 16)),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Place Your Bid", style: GoogleFonts.roboto(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              if (selectedItem != null)
+                Column(
+                  children: [
+                    Image.network(selectedItem!["imageUrl"], height: 150),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _bidController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: "Enter Bid Price",
+                        border: OutlineInputBorder(),
+                      ),
                     ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: Text("Submit Bid"),
-            ),
-          ],
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _placeBid,
+                      child: const Text("Submit Bid"),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         );
       },
     );
   }
 
+  Future<void> _placeBid() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || selectedItemId == null || _bidController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid bid amount")),
+      );
+      return;
+    }
+
+    String? sellerId = selectedItem?['sellerId'];
+    if (sellerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error: Seller ID not found!")),
+      );
+      return;
+    }
+
+    double? bidAmount = double.tryParse(_bidController.text);
+    if (bidAmount == null || bidAmount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Enter a valid bid amount")),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('auctions')
+          .doc(sellerId)
+          .collection('items')
+          .doc(selectedItemId)
+          .collection('bids')
+          .doc(user.uid)
+          .set({
+        'amount': bidAmount,
+        'bidderId': user.uid,
+        'bidderName': user.displayName ?? 'Anonymous',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      await FirebaseFirestore.instance
+          .collection('bids')
+          .doc(user.uid)
+          .collection('bids')
+          .doc(selectedItemId)
+          .set({'bidPlaced': true});
+
+      setState(() {
+        placedBids.add(selectedItemId!);
+      });
+
+      Navigator.pop(context);
+      _bidController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Bid placed successfully!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error placing bid: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      shadowColor: Colors.grey,
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            Image.network(crop.imageUrl, height: 100, width: 100, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
-              return Image.asset('assets/pages/placeholder.png', height: 100, width: 100, fit: BoxFit.cover);
-            }),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Farmer: ${crop.farmerName}"),
-                  Text("Farmer ID: ${crop.farmerId}"),
-                  Text("Address: ${crop.address}"),
-                  Text("Weight: ${crop.weight}"),
-                  Text("Availability: ${crop.available}"),
-                  Text("Rate: ${crop.rate} Per KG"),
-                  ElevatedButton(
-                    onPressed: () => _showBidDialog(context),
-                    child: Text("Bid"),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: const Text("Available Auctions", style: TextStyle(color: Colors.white)),
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('auctions').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No auctions available"));
+          }
+          return ListView(
+            padding: const EdgeInsets.all(8),
+            children: snapshot.data!.docs.map((auctionDoc) {
+              return StreamBuilder(
+                stream: auctionDoc.reference.collection('items').snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> itemsSnapshot) {
+                  if (!itemsSnapshot.hasData || itemsSnapshot.data!.docs.isEmpty) {
+                    return const SizedBox(); // Return an empty widget if no items
+                  }
+                  return Column(
+                    children: itemsSnapshot.data!.docs.map((itemDoc) {
+                      Map<String, dynamic> data = itemDoc.data() as Map<String, dynamic>;
+                      bool hasPlacedBid = placedBids.contains(itemDoc.id);
+                      return Card(
+                        child: ListTile(
+                          leading: Image.network(data['imageUrl'], width: 50, height: 50, fit: BoxFit.cover),
+                          title: Text(data['name']),
+                          subtitle: Text("Quantity: ${data['quantity']}"),
+                          trailing: ElevatedButton(
+                            onPressed: hasPlacedBid ? null : () => _showBidBottomSheet(data, itemDoc.id),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: hasPlacedBid ? Colors.grey : Colors.blue,
+                            ),
+                            child: Text(hasPlacedBid ? "Bid Placed" : "Place Bid"),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              );
+            }).toList(),
+          );
+
+        },
       ),
     );
   }

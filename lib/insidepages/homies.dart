@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '/widgets/card.dart';
 import 'auction.dart';
-import 'package:kisanmitra/mandi.dart';
+import 'package:kisanmitra/insidepages/mandi.dart';
+import 'directSell.dart';
 
 class IPopScreen extends StatelessWidget {
   //final Function(int) onItemSelected; // Function to update bottom nav index
@@ -101,10 +102,16 @@ class IPopScreen extends StatelessWidget {
                         );}, // No navigation
                       ),
                       CustomCard(
-                        title: "Sell",
+                        title: "Direct Sell",
                         bgColor: const Color.fromARGB(255, 128, 236, 47),
                         imagePath: "assets/pages/buy.png",
-                        onTap: () {}, // No navigation
+                        onTap: () {print('Sell tapped');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DirectSellScreen(),
+                          ),
+                        );}, // No navigation
                       ),
                       CustomCard(
                         title: "Auction",

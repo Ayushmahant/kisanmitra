@@ -1,220 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class DirectBuyPage extends StatefulWidget {
-  @override
-  _DirectBuyPageState createState() => _DirectBuyPageState();
-}
-
-class _DirectBuyPageState extends State<DirectBuyPage> {
-  String selectedLocation = 'Nagpur';
-  String searchTerm = '';
+class CustomerProductPage extends StatefulWidget {
+  const CustomerProductPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          selectedLocation,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.green,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  searchTerm = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search crops or farmers...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-              ),
-            ),
-            SizedBox(height: 16),
-            // Location Dropdown
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.grey[200],
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: DropdownButton<String>(
-                value: selectedLocation,
-                items: <String>['Nagpur', 'Indore', 'Ambala', 'Delhi']
-                    .map<DropdownMenuItem<String>>((String location) {
-                  return DropdownMenuItem<String>(
-                    value: location,
-                    child: Text(location, style: TextStyle(fontSize: 16)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedLocation = newValue!;
-                  });
-                },
-                isExpanded: true,
-                underline: SizedBox(),
-              ),
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('direct_buy_items')
-                    .where('location', isEqualTo: selectedLocation)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(child: Text('No items available for direct buy'));
-                  }
-
-                  var filteredCrops = snapshot.data!.docs
-                      .map((doc) => Crop.fromFirestore(doc))
-                      .where((crop) =>
-                  crop.cropName.toLowerCase().contains(searchTerm.toLowerCase()) ||
-                      crop.farmerName.toLowerCase().contains(searchTerm.toLowerCase()))
-                      .toList();
-
-                  return ListView.builder(
-                    itemCount: filteredCrops.length,
-                    itemBuilder: (context, index) {
-                      return CropCard(crop: filteredCrops[index]);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<CustomerProductPage> createState() => _CustomerProductPageState();
 }
 
-class Crop {
-  final String farmerName;
-  final String farmerId;
-  final String address;
-  final String weight;
-  final String land;
-  final String available;
-  final String rate;
-  final String cropName;
-  final String date;
-  final String location;
-  final String imageUrl;
+class _CustomerProductPageState extends State<CustomerProductPage> {
+  final TextEditingController _quantityController = TextEditingController();
 
-  Crop({
-    required this.farmerName,
-    required this.farmerId,
-    required this.address,
-    required this.weight,
-    required this.land,
-    required this.available,
-    required this.rate,
-    required this.cropName,
-    required this.date,
-    required this.location,
-    required this.imageUrl,
-  });
-
-  factory Crop.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return Crop(
-      farmerName: data['farmerName'] ?? 'Unknown Farmer',
-      farmerId: data['farmerId'] ?? 'N/A',
-      address: data['address'] ?? 'Unknown Address',
-      weight: "${data['weight'] ?? 0} Tons",
-      land: data['land'] ?? 'N/A',
-      available: data['available'] ?? 'N/A',
-      rate: data['rate'] ?? '₹ 0',
-      cropName: data['cropName'] ?? 'Unknown Crop',
-      date: data['createdAt'] != null
-          ? (data['createdAt'] as Timestamp).toDate().toString().substring(0, 10)
-          : 'N/A',
-      location: data['location'] ?? 'N/A',
-      imageUrl: data['imageUrl'] ?? 'assets/pages/placeholder.png',
-    );
-  }
-}
-
-class CropCard extends StatelessWidget {
-  final Crop crop;
-
-  CropCard({required this.crop});
-
-  void _showBuyDialog(BuildContext context) {
-    TextEditingController quantityController = TextEditingController();
-
+  void _placeOrder(String productId, String sellerId, String productName, String price) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Confirm Purchase"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.network(
-                crop.imageUrl,
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset('assets/pages/placeholder.png', height: 100, width: 100, fit: BoxFit.cover);
-                },
-              ),
-              SizedBox(height: 10),
-              Text("Price: ${crop.rate} per KG"),
-              SizedBox(height: 10),
-              TextField(
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: "Enter Quantity (KG)",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+          title: const Text("Place Order"),
+          content: TextField(
+            controller: _quantityController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: "Enter Quantity"),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancel", style: TextStyle(color: Colors.red)),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
             ),
             ElevatedButton(
-              onPressed: () {
-                if (quantityController.text.isNotEmpty) {
+              onPressed: () async {
+                int quantity = int.tryParse(_quantityController.text) ?? 0;
+                if (quantity > 0) {
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) return;
+
+                  // Fetch buyer's name from Firestore
+                  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
+                  String buyerName = userDoc.exists ? (userDoc["name"] ?? "Unknown Buyer") : "Unknown Buyer";
+
+                  // Store order with buyerName
+                  await FirebaseFirestore.instance.collection("orders").add({
+                    "buyerId": user.uid,
+                    "buyerName": buyerName, // Now correctly stored
+                    "productId": productId,
+                    "sellerId": sellerId,
+                    "productName": productName,
+                    "quantity": quantity,
+                    "price": price,
+                    "status": "Pending",
+                    "timestamp": FieldValue.serverTimestamp(),
+                  });
+
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Purchase Confirmed!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order placed successfully!")));
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: Text("Confirm Buy"),
+              child: const Text("Order"),
             ),
           ],
         );
@@ -222,45 +64,60 @@ class CropCard extends StatelessWidget {
     );
   }
 
+
+  Future<List<DocumentSnapshot>> _fetchProducts() async {
+    QuerySnapshot farmersSnapshot = await FirebaseFirestore.instance.collection("directSell").get();
+    List<DocumentSnapshot> allProducts = [];
+
+    for (var farmerDoc in farmersSnapshot.docs) {
+      QuerySnapshot itemsSnapshot = await farmerDoc.reference.collection("items").get();
+      allProducts.addAll(itemsSnapshot.docs);
+    }
+    return allProducts;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            Image.network(
-              crop.imageUrl,
-              height: 100,
-              width: 100,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset('assets/pages/placeholder.png', height: 100, width: 100, fit: BoxFit.cover);
-              },
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Farmer: ${crop.farmerName}"),
-                  Text("Rate: ${crop.rate} Per KG"),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => _showBuyDialog(context),
-                        child: Text("Buy Now"),
-                      ),
-                    ],
+    return Scaffold(
+      appBar: AppBar(title: const Text("Available Products"), backgroundColor: Colors.green),
+      body: FutureBuilder(
+        future: _fetchProducts(),
+        builder: (context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No products available"));
+          }
+
+          return ListView(
+            padding: const EdgeInsets.all(8),
+            children: snapshot.data!.map((doc) {
+              Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+
+              if (data == null || !data.containsKey('name') || !data.containsKey('price')) {
+                return const SizedBox(); // Skip invalid data
+              }
+
+              String productId = doc.id;
+              String sellerId = data['farmerId'] ?? 'Unknown Seller';
+
+              return Card(
+                child: ListTile(
+                  leading: data['imageUrl'] != null && data['imageUrl'].isNotEmpty
+                      ? Image.network(data['imageUrl'], width: 50, height: 50, fit: BoxFit.cover)
+                      : const Icon(Icons.image_not_supported, size: 50), // Placeholder for missing images
+                  title: Text(data['name'] ?? 'Unknown Product'),
+                  subtitle: Text("Quantity: ${data['quantity'] ?? 'N/A'} \nPrice: \$${data['price'] ?? 'N/A'}"),
+                  trailing: ElevatedButton(
+                    onPressed: () => _placeOrder(productId, sellerId, data['name'] ?? '', data['price'] ?? ''),
+                    child: const Text("Order"),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                ),
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }

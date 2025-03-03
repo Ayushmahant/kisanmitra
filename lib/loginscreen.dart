@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:animate_do/animate_do.dart';
 import 'register.dart';
-import 'insidepages/homies.dart';
+import 'insidepages/Customer_Dashboard.dart';
 import 'bottomnavbar.dart';
 import 'splashscreen.dart'; // Replace with your actual home screen
 

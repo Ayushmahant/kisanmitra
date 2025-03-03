@@ -67,7 +67,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  uses-material-design: true
+
 
 
 
@@ -76,17 +76,18 @@ flutter:
   # the material Icons class.
 
 
-   assets:
-     - assets/splashscreen/screen.png
-     - assets/animations/Animation - 1738948259531.json
-     - assets/logo.png
-     - assets/pages/bid.png
-     - assets/pages/buy.png
-     - assets/pages/example2.jpg
-     - assets/pages/exmaple.jpg
-     - assets/pages/newspaper-folded.png
-     - assets/pages/store.png
-     - assets/pages/consumerdashboard.jpg
+  assets:
+    - assets/splashscreen/screen.png
+    - assets/animations/Animation - 1738948259531.json
+    - assets/logo.png
+    - assets/pages/bid.png
+    - assets/pages/buy.png
+    - assets/pages/example2.jpg
+    - assets/pages/exmaple.jpg
+    - assets/pages/newspaper-folded.png
+    - assets/pages/store.png
+    - assets/pages/customer_dashboard.jpg
+    - assets/pages/search.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

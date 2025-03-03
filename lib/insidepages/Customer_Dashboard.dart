@@ -5,6 +5,7 @@ import '/widgets/card.dart';
 import '/bottomnavbar.dart';
 import 'package:kisanmitra/insidepages/Auction(C).dart';
 import 'package:kisanmitra/widgets/card.dart';
+import 'mandi.dart';
 
 
 class customerdashboard extends StatelessWidget {
@@ -49,7 +50,7 @@ class customerdashboard extends StatelessWidget {
                 },
                 blendMode: BlendMode.lighten,
                 child: Image.asset(
-                  'assets/pages/consumerdashboard.jpg',
+                  'assets/pages/customer_dashboard.jpg',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -95,16 +96,21 @@ class customerdashboard extends StatelessWidget {
                         title: "Market",
                         bgColor: Colors.green,
                         imagePath: "assets/pages/store.png",
-                        //onTap: () {}, // No navigation
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => MandiPriceApp()),
+                          );
+                        }, // No navigation
                       ),
                       CustomCard(
                         title: "Direct Buy",
                         bgColor: const Color.fromARGB(255, 128, 236, 47),
-                        imagePath: "assets/pages/search.png",
+                        imagePath: "assets/pages/search.jpg",
                         onTap: () {
                          Navigator.push(
                           context,
-                         MaterialPageRoute(builder: (context) => DirectBuyPage()),
+                         MaterialPageRoute(builder: (context) => CustomerProductPage()),
                       );}),
                       CustomCard(
                         title: "Bid",
@@ -113,7 +119,7 @@ class customerdashboard extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => AuctionPage()), // Navigate to AuctionPage
+                            MaterialPageRoute(builder: (context) => CustomerAuctionScreen()), // Navigate to AuctionPage
                           );
                         },
                       ),
@@ -121,13 +127,14 @@ class customerdashboard extends StatelessWidget {
                         title: "Trends",
                         bgColor: Colors.lightGreenAccent,
                         imagePath: "assets/pages/newspaper-folded.png",
-                        //onTap: () {
+                        onTap: () {
                         // Navigator.push(
                           //  context,
                           //  MaterialPageRoute(builder: (context) => DirectBuyPage()), // Navigate to AuctionPage
                          // );
-                        //}, // No navigation
+                        }, // No navigation
                       ),
+
                     ],
                   ),
                 ),

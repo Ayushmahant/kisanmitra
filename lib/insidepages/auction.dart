@@ -82,14 +82,19 @@ class _AuctionScreenState extends State<AuctionScreen> {
 
     try {
       String imageUrl = await _uploadToFirebaseStorage(_image!);
+
+      // Ensure auction collection has seller info
       FirebaseFirestore.instance.collection('auctions').doc(user.uid).set({
         'userId': user.uid,
+        'sellerName': user.displayName ?? 'Unknown Seller', // Optional, for display purposes
       }, SetOptions(merge: true));
 
+      // ✅ Store `sellerId` when adding item
       await FirebaseFirestore.instance.collection('auctions').doc(user.uid).collection('items').add({
         'name': _nameController.text,
         'quantity': _quantityController.text,
         'imageUrl': imageUrl,
+        'sellerId': user.uid, // ✅ Add the seller ID
         'timestamp': FieldValue.serverTimestamp(),
       });
 
@@ -115,6 +120,7 @@ class _AuctionScreenState extends State<AuctionScreen> {
     }
   }
 
+
   Future<String> _uploadToFirebaseStorage(File image) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
     Reference ref = FirebaseStorage.instance.ref().child("auction_images/$fileName");
@@ -123,12 +129,16 @@ class _AuctionScreenState extends State<AuctionScreen> {
   }
 
   void _showBids(String itemId) {
+    final user = FirebaseAuth.instance.currentUser;
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return StreamBuilder(
           stream: FirebaseFirestore.instance
-              .collection('bids')
+              .collection('auctions')
+              .doc(user!.uid) // Auction owner's document
+              .collection('items')
               .doc(itemId)
               .collection('bids')
               .orderBy('amount', descending: true)
@@ -144,12 +154,16 @@ class _AuctionScreenState extends State<AuctionScreen> {
               children: snapshot.data!.docs.map((doc) {
                 Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
                 return ListTile(
-                  title: Text("Bid: \$${data['amount']}"),
-                  subtitle: Text("Bidder: ${data['bidderName']}"),
+                  title: Text("Bid: ₹${data['amount']}"),
+                  // subtitle: Text("Bidder: ${data['bidderName']}"),
                   trailing: ElevatedButton(
                     onPressed: () async {
-                      await FirebaseFirestore.instance.collection('auctions').doc(FirebaseAuth.instance.currentUser!.uid)
-                          .collection('items').doc(itemId).update({'selectedBid': data});
+                      await FirebaseFirestore.instance
+                          .collection('auctions')
+                          .doc(user.uid)
+                          .collection('items')
+                          .doc(itemId)
+                          .update({'selectedBid': data});
                       Navigator.pop(context);
                     },
                     child: const Text("Select"),
@@ -162,6 +176,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
       },
     );
   }
+
+
 
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
