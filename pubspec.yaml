@@ -49,6 +49,7 @@ dependencies:
   firebase_core: ^3.12.0
   firebase_storage: ^12.4.3
   path: ^1.9.0
+  shared_preferences: ^2.5.2
 
 dev_dependencies:
   flutter_test:
@@ -75,16 +76,18 @@ flutter:
   # the material Icons class.
 
 
-   assets:
-     - assets/splashscreen/screen.png
-     - assets/animations/Animation - 1738948259531.json
-     - assets/logo.png
-     - assets/pages/bid.png
-     - assets/pages/buy.png
-     - assets/pages/example2.jpg
-     - assets/pages/exmaple.jpg
-     - assets/pages/newspaper-folded.png
-     - assets/pages/store.png
+  assets:
+    - assets/splashscreen/screen.png
+    - assets/animations/Animation - 1738948259531.json
+    - assets/logo.png
+    - assets/pages/bid.png
+    - assets/pages/buy.png
+    - assets/pages/example2.jpg
+    - assets/pages/exmaple.jpg
+    - assets/pages/newspaper-folded.png
+    - assets/pages/store.png
+    - assets/pages/customer_dashboard.jpg
+    - assets/pages/search.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
