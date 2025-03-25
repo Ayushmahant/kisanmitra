@@ -10,9 +10,17 @@ class MandiPriceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mandi Prices',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system,
+      theme: ThemeData(
+        primarySwatch: Colors.green, // 🌿 Green Theme
+        scaffoldBackgroundColor: Colors.white, // White Background
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.green, // Green App Bar
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+        ),
+      ),
       home: const MandiPricePage(),
     );
   }
@@ -52,9 +60,6 @@ class _MandiPricePageState extends State<MandiPricePage> {
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
-      print('Response Status: ${response.statusCode}');
-      print('Response Body: ${response.body}'); // DEBUG API RESPONSE
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
@@ -123,7 +128,7 @@ class _MandiPricePageState extends State<MandiPricePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mandi Prices'),
-        leading: IconButton( // 🔙 ADD BACK BUTTON
+        leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
@@ -146,42 +151,50 @@ class _MandiPricePageState extends State<MandiPricePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Search by State, Market, or Commodity',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: const BorderSide(color: Colors.green), // Green Border
+                ),
+                prefixIcon: const Icon(Icons.search, color: Colors.green), // Green Icon
               ),
             ),
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: Colors.green))
                 : _errorMessage.isNotEmpty
-                ? Center(child: Text(_errorMessage))
+                ? Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)))
                 : _filteredData.isEmpty
-                ? const Center(child: Text('No data available'))
+                ? const Center(child: Text('No data available', style: TextStyle(color: Colors.green)))
                 : SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
+                  headingRowColor: MaterialStateColor.resolveWith((states) => Colors.green.shade100),
+                  border: TableBorder.all(color: Colors.green),
                   columns: const [
-                    DataColumn(label: Text('State')),
-                    DataColumn(label: Text('Market')),
-                    DataColumn(label: Text('Commodity')),
-                    DataColumn(label: Text('Min Price')),
-                    DataColumn(label: Text('Max Price')),
-                    DataColumn(label: Text('Modal Price')),
+                    DataColumn(label: Text('State', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Market', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Commodity', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Min Price', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Max Price', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Modal Price', style: TextStyle(fontWeight: FontWeight.bold))),
                   ],
                   rows: _filteredData.map((item) {
-                    return DataRow(cells: [
-                      DataCell(Text(item['state'] ?? 'N/A')),
-                      DataCell(Text(item['market'] ?? 'N/A')),
-                      DataCell(Text(item['commodity'] ?? 'N/A')),
-                      DataCell(Text(item['min_price']?.toString() ?? 'N/A')),
-                      DataCell(Text(item['max_price']?.toString() ?? 'N/A')),
-                      DataCell(Text(item['modal_price']?.toString() ?? 'N/A')),
-                    ]);
+                    return DataRow(
+                      color: MaterialStateColor.resolveWith((states) => Colors.green.shade50),
+                      cells: [
+                        DataCell(Text(item['state'] ?? 'N/A')),
+                        DataCell(Text(item['market'] ?? 'N/A')),
+                        DataCell(Text(item['commodity'] ?? 'N/A')),
+                        DataCell(Text(item['min_price']?.toString() ?? 'N/A')),
+                        DataCell(Text(item['max_price']?.toString() ?? 'N/A')),
+                        DataCell(Text(item['modal_price']?.toString() ?? 'N/A')),
+                      ],
+                    );
                   }).toList(),
                 ),
               ),
