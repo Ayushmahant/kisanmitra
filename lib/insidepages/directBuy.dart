@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class CustomerProductPage extends StatefulWidget {
   const CustomerProductPage({super.key});
@@ -53,10 +54,22 @@ class _CustomerProductPageState extends State<CustomerProductPage> {
                   });
 
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order placed successfully!")));
+
+                  final snackBar = SnackBar(
+
+                    elevation: 0,
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    content: AwesomeSnackbarContent(
+                      title: 'Placed !',
+                      message: 'Your order for $productName has been placed successfully!',
+                      contentType: ContentType.success, // Success message style
+                    ),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
               },
-              child: const Text("Order"),
+              child: const Text("Done"),
             ),
           ],
         );

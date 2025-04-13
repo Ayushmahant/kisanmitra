@@ -1,14 +1,11 @@
-import 'dart:async';  // Import for Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'loginscreen.dart';
-import 'insidepages/homies.dart';
-import 'bottomnavbar.dart';
-import 'insidepages/auction.dart';
+import 'bottomnavbar.dart'; // Assuming this is your home screen
 
-class Splash extends StatefulWidget {  // Change to StatefulWidget
+class Splash extends StatefulWidget {
   const Splash({super.key});
 
   @override
@@ -16,18 +13,27 @@ class Splash extends StatefulWidget {  // Change to StatefulWidget
 }
 
 class _SplashState extends State<Splash> {
-
   @override
   void initState() {
     super.initState();
+    _navigateToNextScreen();
+  }
 
-    // Timer for 5 seconds
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _navigateToNextScreen() async {
+    await Future.delayed(const Duration(seconds: 4)); // Simulate splash delay
+
+    final prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Navigate to Home if logged in, otherwise go to LoginScreen
+    if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),  // Navigate to HomeScreen
+        MaterialPageRoute(
+          builder: (context) => isLoggedIn ? MajorPage() : HomePage(),
+        ),
       );
-    });
+    }
   }
 
   @override
@@ -44,15 +50,12 @@ class _SplashState extends State<Splash> {
               width: 400,
               height: 400,
             ),
-
             const SizedBox(height: 100),
-
             Lottie.asset(
               "assets/animations/Animation - 1738948259531.json",
               width: 100,
               height: 100,
             ),
-
             const SizedBox(height: 100),
           ],
         ),

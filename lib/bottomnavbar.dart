@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'insidepages/homies.dart'; // Farmer home
 import 'insidepages/Customer_Dashboard.dart'; // Customer dashboard
-// import 'insidepages/profile.dart'; // Profile page (Farmer & Customer)
+ import 'insidepages/profile.dart'; // Profile page (Farmer & Customer)
 // import 'insidepages/chat.dart'; // Chat page (Farmer & Customer)
 
 class MajorPage extends StatefulWidget {
@@ -60,14 +60,14 @@ class _MajorPageState extends State<MajorPage> {
   List<Widget> get _pages {
     if (userRole == "farmer") {
       return [
-        IPopScreen(), // Farmer Home
-        // ProfilePage(), // Farmer Profile
+        CustomerDashboardSell(), // Farmer Home
+         ProfilePage(), // Farmer Profile
         // ChatPage(), // Chat
       ];
     } else {
       return [
         customerdashboard(), // Customer Home
-        // ProfilePage(), // Customer Profile
+        ProfilePage(), // Customer Profile
         // ChatPage(), // Chat
       ];
     }

@@ -3,145 +3,155 @@ import '/widgets/card.dart';
 import 'auction.dart';
 import 'package:kisanmitra/insidepages/mandi.dart';
 import 'directSell.dart';
+//IPopScreen
 
-class IPopScreen extends StatelessWidget {
-  //final Function(int) onItemSelected; // Function to update bottom nav index
-
-  const IPopScreen({super.key}); // required this.onItemSelected
+class CustomerDashboardSell extends StatelessWidget {
+  const CustomerDashboardSell({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Background Image restricted to Half Screen with Shadow
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    blurRadius: 5,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ShaderMask(
-                shaderCallback: (Rect bounds) {
-                  return LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: 0),
-                      Colors.white.withValues(alpha: 0.2),
-                      Colors.white,
-                    ],
-                  ).createShader(bounds);
-                },
-                blendMode: BlendMode.lighten,
-                child: Image.asset(
-                  'assets/pages/example2.jpg',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          bool isTablet = screenWidth > 600;
 
-          // Content (Text & Cards)
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.4,
-            left: 16,
-            right: 16,
-            bottom: 16,
+          return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 30),
-                const Text(
-                  'Welcome Ayush',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Container(
+                  width: double.infinity,
+                  height: constraints.maxHeight * 0.5,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        blurRadius: 5,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ShaderMask(
+                    shaderCallback: (Rect bounds) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withValues(alpha: 0),
+                          Colors.white.withValues(alpha: 0.1),
+                          Colors.white,
+                        ],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.lighten,
+                    child: Image.asset(
+                      'assets/pages/customer_dashboard.jpg',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Bringing you the freshest produce right from the source.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome Seller',
+                        style: TextStyle(
+                          fontSize: isTablet ? 36 : 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 10),
-
-                Expanded(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GridView.count(
-                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: isTablet ? 3 : 2,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    childAspectRatio: 2,
+                    childAspectRatio: isTablet ? 2.2 : 2,
                     children: [
                       CustomCard(
                         title: "Market",
                         bgColor: Colors.green,
                         imagePath: "assets/pages/store.png",
-                        onTap: () {print('Market tapped');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MandiPriceApp(),
-                          ),
-                        );}, // No navigation
+                        onTap: () {
+                          Navigator.push(context, _createRoute(MandiPriceApp()));
+                        },
                       ),
                       CustomCard(
                         title: "Direct Sell",
                         bgColor: const Color.fromARGB(255, 128, 236, 47),
-                        imagePath: "assets/pages/buy.png",
-                        onTap: () {print('Sell tapped');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DirectSellScreen(),
-                          ),
-                        );}, // No navigation
+                        imagePath: "assets/pages/search.jpg",
+                        onTap: () {
+                          Navigator.of(context).push(_createRoute(DirectSellScreen()));
+                        },
                       ),
                       CustomCard(
                         title: "Auction",
                         bgColor: Colors.greenAccent,
                         imagePath: "assets/pages/bid.png",
                         onTap: () {
-                          print('Auction card tapped');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AuctionScreen(),
-                            ),
-                          );
+                          Navigator.push(context, _createRoute(AuctionScreen()));
                         },
-
                       ),
                       CustomCard(
                         title: "Trends",
                         bgColor: Colors.lightGreenAccent,
                         imagePath: "assets/pages/newspaper-folded.png",
-                        onTap: () {}, // No navigation
+                        onTap: () {
+                          // No navigation yet
+                        },
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
+}
+
+Route _createRoute(Widget child) {
+  return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 700),
+    reverseTransitionDuration: const Duration(milliseconds:500),
+    pageBuilder: (context, animation, secondaryAnimation) => child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const reverseBegin = Offset.zero;
+      const reverseEnd = Offset(0.0, 1.0);
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var reverseTween = Tween(begin: reverseBegin, end: reverseEnd)
+          .chain(CurveTween(curve: curve));
+      var fadeTween = Tween(begin: 0.0, end: 1.0);
+      var fadeAnimation = animation.drive(CurveTween(curve: Curves.easeInOut));
+
+      return FadeTransition(
+        opacity: fadeAnimation,
+        child: SlideTransition(
+          position: animation.drive(tween),
+          child: SlideTransition(
+            position: secondaryAnimation.drive(reverseTween),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
 }
