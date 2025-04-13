@@ -7,6 +7,7 @@ import 'package:kisanmitra/insidepages/Auction(C).dart';
 import 'package:kisanmitra/widgets/card.dart';
 import 'mandi.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'chatBidder.dart';
 
 class customerdashboard extends StatelessWidget {
   const customerdashboard({super.key});

@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'insidepages/homies.dart'; // Farmer home
 import 'insidepages/Customer_Dashboard.dart'; // Customer dashboard
- import 'insidepages/profile.dart'; // Profile page (Farmer & Customer)
+ import 'insidepages/profile.dart';
+ import 'insidepages/chatSeller.dart';
+ import 'insidepages/chatBidder.dart';// Profile page (Farmer & Customer)
 // import 'insidepages/chat.dart'; // Chat page (Farmer & Customer)
 
 class MajorPage extends StatefulWidget {
@@ -62,13 +64,13 @@ class _MajorPageState extends State<MajorPage> {
       return [
         CustomerDashboardSell(), // Farmer Home
          ProfilePage(), // Farmer Profile
-        // ChatPage(), // Chat
+        FarmerChatsScreen(), // Chat
       ];
     } else {
       return [
         customerdashboard(), // Customer Home
         ProfilePage(), // Customer Profile
-        // ChatPage(), // Chat
+        MyChatsScreen(), // Chat
       ];
     }
   }

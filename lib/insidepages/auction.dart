@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'chatScreen.dart';
 
 class AuctionScreen extends StatefulWidget {
   const AuctionScreen({super.key});
@@ -26,7 +27,8 @@ class _AuctionScreenState extends State<AuctionScreen> {
     var status = await Permission.photos.request();
     if (status.isGranted || status.isLimited) {
       try {
-        final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+        final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
         if (pickedFile != null) {
           final croppedFile = await ImageCropper().cropImage(
             sourcePath: pickedFile.path,
@@ -59,13 +61,11 @@ class _AuctionScreenState extends State<AuctionScreen> {
       return;
     }
 
-    // Close the bottom sheet before showing the loader
     Navigator.pop(context);
 
-    // Show a loading dialog
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent user from closing it manually
+      barrierDismissible: false,
       builder: (context) {
         return const AlertDialog(
           content: Column(
@@ -83,22 +83,19 @@ class _AuctionScreenState extends State<AuctionScreen> {
     try {
       String imageUrl = await _uploadToFirebaseStorage(_image!);
 
-      // Ensure auction collection has seller info
       FirebaseFirestore.instance.collection('auctions').doc(user.uid).set({
         'userId': user.uid,
-        'sellerName': user.displayName ?? 'Unknown Seller', // Optional, for display purposes
+        'sellerName': user.displayName ?? 'Unknown Seller',
       }, SetOptions(merge: true));
 
-      // ✅ Store `sellerId` when adding item
       await FirebaseFirestore.instance.collection('auctions').doc(user.uid).collection('items').add({
         'name': _nameController.text,
         'quantity': _quantityController.text,
         'imageUrl': imageUrl,
-        'sellerId': user.uid, // ✅ Add the seller ID
+        'sellerId': user.uid,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      // Close the loading dialog
       Navigator.pop(context);
 
       setState(() {
@@ -111,7 +108,6 @@ class _AuctionScreenState extends State<AuctionScreen> {
         const SnackBar(content: Text("Auction item added successfully")),
       );
     } catch (e) {
-      // Close the loading dialog
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,7 +115,6 @@ class _AuctionScreenState extends State<AuctionScreen> {
       );
     }
   }
-
 
   Future<String> _uploadToFirebaseStorage(File image) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
@@ -137,7 +132,7 @@ class _AuctionScreenState extends State<AuctionScreen> {
         return StreamBuilder(
           stream: FirebaseFirestore.instance
               .collection('auctions')
-              .doc(user!.uid) // Auction owner's document
+              .doc(user!.uid)
               .collection('items')
               .doc(itemId)
               .collection('bids')
@@ -155,7 +150,7 @@ class _AuctionScreenState extends State<AuctionScreen> {
                 Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
                 return ListTile(
                   title: Text("Bid: ₹${data['amount']}"),
-                  // subtitle: Text("Bidder: ${data['bidderName']}"),
+                  subtitle: Text("Bidder ID: ${data['bidderId']}"),
                   trailing: ElevatedButton(
                     onPressed: () async {
                       await FirebaseFirestore.instance
@@ -164,7 +159,19 @@ class _AuctionScreenState extends State<AuctionScreen> {
                           .collection('items')
                           .doc(itemId)
                           .update({'selectedBid': data});
+
                       Navigator.pop(context);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            itemId: itemId,
+                            sellerId: user.uid,
+                            bidderId: data['bidderId'],
+                          ),
+                        ),
+                      );
                     },
                     child: const Text("Select"),
                   ),
@@ -176,8 +183,6 @@ class _AuctionScreenState extends State<AuctionScreen> {
       },
     );
   }
-
-
 
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -231,7 +236,7 @@ class _AuctionScreenState extends State<AuctionScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: Text("Auction", style: const TextStyle(color: Colors.white)),
+        title: const Text("Auction", style: TextStyle(color: Colors.white)),
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('auctions').doc(user!.uid).collection('items').orderBy('timestamp', descending: true).snapshots(),
@@ -246,15 +251,37 @@ class _AuctionScreenState extends State<AuctionScreen> {
             padding: const EdgeInsets.all(8),
             children: snapshot.data!.docs.map((doc) {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+              Widget? trailingWidget;
+              List<Widget> subtitleWidgets = [Text("Quantity: ${data['quantity']}")];
+
+              if (data.containsKey('selectedBid')) {
+                final selectedBid = data['selectedBid'];
+                subtitleWidgets.add(Text("✅ Selected Bid: ₹${selectedBid['amount']}"));
+                trailingWidget = ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => ChatScreen(
+                        itemId: doc.id,
+                        sellerId: user.uid,
+                        bidderId: selectedBid['bidderId'],
+                      ),
+                    ));
+                  },
+                  child: const Text("Chat"),
+                );
+              } else {
+                trailingWidget = ElevatedButton(
+                  onPressed: () => _showBids(doc.id),
+                  child: const Text("View Bids"),
+                );
+              }
+
               return Card(
                 child: ListTile(
                   leading: Image.network(data['imageUrl'], width: 50, height: 50, fit: BoxFit.cover),
                   title: Text(data['name']),
-                  subtitle: Text("Quantity: ${data['quantity']}"),
-                  trailing: ElevatedButton(
-                    onPressed: () => _showBids(doc.id),
-                    child: const Text("View Bids"),
-                  ),
+                  subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: subtitleWidgets),
+                  trailing: trailingWidget,
                 ),
               );
             }).toList(),
