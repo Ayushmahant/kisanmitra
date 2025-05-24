@@ -41,8 +41,8 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAtpskvCy7dxhXLm5vXtOpjRppxUM9lv30',
-    appId: '1:482583214762:web:a85af2b3f005eead2e2ed3',
+    apiKey: '...',
+    appId: '...',
     messagingSenderId: '482583214762',
     projectId: 'krisimitra-090608',
     authDomain: 'krisimitra-090608.firebaseapp.com',
@@ -60,8 +60,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAtpskvCy7dxhXLm5vXtOpjRppxUM9lv30',
-    appId: '1:482583214762:web:be2c2a1d930b8aa82e2ed3',
+    apiKey: '...',
+    appId: '...',
     messagingSenderId: '482583214762',
     projectId: 'krisimitra-090608',
     authDomain: 'krisimitra-090608.firebaseapp.com',
@@ -70,8 +70,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBij7IJ66bRSncpe3nyDC0Mv337LnTFvmU',
-    appId: '1:482583214762:ios:8db2466fbf20d9992e2ed3',
+    apiKey: '...',
+    appId: '...',
     messagingSenderId: '482583214762',
     projectId: 'krisimitra-090608',
     storageBucket: 'krisimitra-090608.firebasestorage.app',
@@ -79,8 +79,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC2s43kcwa_kMtjbxHWtX7AOy-KHOuOdoE',
-    appId: '1:482583214762:android:69e52cef2e615a002e2ed3',
+    apiKey: '...',
+    appId: '...',
     messagingSenderId: '482583214762',
     projectId: 'krisimitra-090608',
     storageBucket: 'krisimitra-090608.firebasestorage.app',
